@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const History = require("../models/history");
 const { contactUsTemplate } = require("../template/contactUs");
 const mailSender = require("../utils/mailSender");
 require("dotenv").config();
@@ -70,6 +71,111 @@ exports.Login = async (req, res) => {
         res.status(400).json({
             error: err
         })
+    }
+}
+
+exports.history = async (req, res) => {
+    try {
+        const { email, history } = req.body;
+        console.log(email, history);
+        const user = await History.findOne({ email: email });
+        if (!user) {
+            return res.status(200).json({
+                success: false,
+                msg: "user does not exists"
+            }
+            );
+        }
+
+
+        let newHistory = await History.findOneAndUpdate({ email }, { $push: { history: history } }, { new: true });
+        return res.status(200).json({
+            success: true,
+            msg: "history added successfully",
+            history: newHistory
+        })
+
+    } catch (err) {
+        res.status(400).json({
+            error: err
+        })
+    }
+}
+exports.getHistory = async (req, res) => {
+    try {
+        const { email } = req.body;
+        console.log(email);
+        const user = await User.find({ email });
+        if (!user) {
+            return res.status(200).json({
+                success: false,
+                msg: "user does not exists"
+            }
+            );
+        }
+        const history = await History.find({ email });
+        return res.status(200).json({
+            success: true,
+            history: history
+        });
+    } catch (err) {
+        res.status(400).json({
+            error: err
+        });
+    }
+}
+exports.deleteHistoryByIndex = async (req, res) => {
+    try {
+        const { index, email } = req.body;
+        console.log(email, index)
+        const userHiistory = await History.findOne({ email });
+        console.log(userHiistory)
+        if (!userHiistory) {
+            return res.json({
+                success: false,
+                msg: "User history not found"
+            })
+        }
+        if (index >= userHiistory.history.length) {
+            return res.json({
+                success: false,
+                msg: "invalid index"
+            })
+        }
+        userHiistory.history = userHiistory.history.filter((history, i) => i != index);
+        console.log(userHiistory.history)
+        await userHiistory.save();
+        return res.json({
+            success: true,
+            msg: "User history at index " + index + " has been delted"
+        })
+    } catch (error) {
+        res.status(400).json({
+            error: error
+        });
+    }
+}
+exports.deleteAllHistory = async (req, res) => {
+    try {
+        const { email } = req.body;
+        console.log(email)
+        const userHistory = await History.findOne({ email });
+        if (!userHistory) {
+            return res.json({
+                success: false,
+                msg: "User history not found"
+            })
+        }
+        userHistory.history = [];
+        await userHistory.save();
+        return res.json({
+            success: true,
+            msg: "All user history has been deleted"
+        })
+    } catch (error) {
+        res.status(400).json({
+            error: error
+        });
     }
 }
 
