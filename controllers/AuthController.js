@@ -242,6 +242,12 @@ exports.deleteAllHistory = async (req, res) => {
 
 exports.sendMail = async (req, res) => {
     try {
+        const { name, email, message } = req.body;
+        if (!name || !email || !message) {
+            return res.status(400).json({
+                error: "All fields are required"
+            });
+        }
         const referer = req.get("referer");
         // → "http://127.0.0.1:5500/html/contact.html"
 
@@ -253,7 +259,7 @@ exports.sendMail = async (req, res) => {
             clientDomain = `${parsed.protocol}//${parsed.host}`;
             // → "http://127.0.0.1:5500"
         }
-        mailSender(req.body.email, "Thanks for contacting us", contactUsTemplate(req.body.name, req.body.message, clientDomain));
+        mailSender(email, "Thanks for contacting us", contactUsTemplate(name, message, clientDomain));
         res.status(200).json({
             success: true,
             msg: "mail sent successfully"
