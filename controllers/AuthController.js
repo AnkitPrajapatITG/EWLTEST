@@ -1,4 +1,6 @@
 const User = require("../models/user");
+const { contactUsTemplate } = require("../template/contactUs");
+const mailSender = require("../utils/mailSender");
 require("dotenv").config();
 
 exports.Signup = async (req, res) => {
@@ -130,3 +132,24 @@ exports.Login = async (req, res) => {
 //         });
 //     }
 // }
+
+
+exports.sendMail = async (req, res) => {
+    try {
+        const host = req.get("host"); // domain
+        const protocol = req.protocol; // "http" or "https"
+        const userDomain = `${protocol}://${host}`; // full base URL
+
+        mailSender(req.body.email, req?.body?.title ?? "No Title", contactUsTemplate(req.body.name, req.body.message,userDomain));
+        res.status(200).json({
+            success: true,
+            msg: "mail sent successfully"
+        });
+    }
+    catch (err) {
+        res.status(400).json({
+            error: err
+        });
+    }
+}
+
