@@ -136,11 +136,18 @@ exports.Login = async (req, res) => {
 
 exports.sendMail = async (req, res) => {
     try {
-        const host = req.get("host"); // domain
-        const protocol = req.protocol; // "http" or "https"
-        const userDomain = `${protocol}://${host}`; // full base URL
+        const referer = req.get("referer");
+        // → "http://127.0.0.1:5500/html/contact.html"
 
-        mailSender(req.body.email, req?.body?.title ?? "No Title", contactUsTemplate(req.body.name, req.body.message,userDomain));
+        // If you only want the base domain (without path)
+        const { URL } = require("url");
+        let clientDomain = null;
+        if (referer) {
+            const parsed = new URL(referer);
+            clientDomain = `${parsed.protocol}//${parsed.host}`;
+            // → "http://127.0.0.1:5500"
+        }
+        mailSender(req.body.email, "Thanks for contacting us", contactUsTemplate(req.body.name, req.body.message, clientDomain));
         res.status(200).json({
             success: true,
             msg: "mail sent successfully"
