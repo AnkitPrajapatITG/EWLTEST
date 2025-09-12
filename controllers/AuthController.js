@@ -78,14 +78,14 @@ exports.history = async (req, res) => {
     try {
         const { email, history } = req.body;
         console.log(email, history);
-        const user = await History.findOne({ email: email });
-        if (!user) {
-            return res.status(200).json({
-                success: false,
-                msg: "user does not exists"
-            }
-            );
-        }
+        // const user = await History.findOne({ email: email });
+        // if (!user) {
+        //     return res.status(200).json({
+        //         success: false,
+        //         msg: "user does not exists"
+        //     }
+        //     );
+        // }
 
 
         let newHistory = await History.findOneAndUpdate({ email }, { $push: { history: history } }, { new: true });
